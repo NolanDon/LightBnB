@@ -128,11 +128,40 @@ const getAllProperties = function(options, limit = 10) {
    `;
  
    // 3
-   if (options.city) {
-     queryParams.push(`%${options.city}%`);
-     queryString += `WHERE city LIKE $${queryParams.length} `;
-   }
- 
+  if (options.city) {
+    queryParams.push(`%${options.city}%`);
+    queryString += `WHERE city LIKE $${queryParams.length} `;
+  }
+   
+  if (options.minimum_price_per_night) {
+    if(queryParams.length < 1) {
+      queryString += `WHERE `
+    } else {
+      queryString += `AND `
+    }
+    queryParams.push(`${options.minimum_price_per_night}`)
+    queryString += `cost_per_night > $${queryParams.length}`
+  }
+  
+  if (options.maximum_price_per_night) {
+    if(queryParams.length < 1) {
+      queryString += `WHERE `
+    } else {
+      queryString += ` AND `
+    }
+    queryParams.push(`${options.maximum_price_per_night}`)
+    queryString += `cost_per_night < $${queryParams.length}`
+  }
+  
+  if (options.minimum_rating) {
+    if(queryParams.length < 1) {
+      queryString += `WHERE `
+    } else {
+      queryString += ` AND `
+    }
+    queryParams.push(`${options.minimum_rating}`)
+    queryString += `rating >= $${queryParams.length}`
+  }
    // 4
    queryParams.push(limit);
    queryString += `
@@ -142,7 +171,7 @@ const getAllProperties = function(options, limit = 10) {
    `;
  
    // 5
-   console.log(queryString, queryParams);
+   console.log('bogus' + queryString, 'cats' + queryParams);
  
    // 6
    return pool.query(queryString, queryParams)
