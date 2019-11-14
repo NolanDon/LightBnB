@@ -8,8 +8,8 @@ const pool = new Pool({
 });
 
 
-const properties = require('./json/properties.json');
-const users = require('./json/users.json');
+// const properties = require('./json/properties.json');
+// const users = require('./json/users.json');
 
 /// Users
 
@@ -19,7 +19,23 @@ const users = require('./json/users.json');
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function(email) {
-  let user;
+  // let user;
+  // for (const userId in users) {
+    // user = users[userId];
+    // if (user.email.toLowerCase() === email.toLowerCase()) {
+      // break;
+    // } else {
+      // user = null;
+    // }
+  // }
+  return pool.query(`
+  SELECT users.* FROM users
+  WHERE users.email = $1
+  `, [email])
+   .then(res => (res.rows[0]))
+};
+  
+  /*let user;
   for (const userId in users) {
     user = users[userId];
     if (user.email.toLowerCase() === email.toLowerCase()) {
@@ -29,7 +45,7 @@ const getUserWithEmail = function(email) {
     }
   }
   return Promise.resolve(user);
-}
+} */
 exports.getUserWithEmail = getUserWithEmail;
 
 /**
@@ -37,9 +53,16 @@ exports.getUserWithEmail = getUserWithEmail;
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithId = function(id) {
-  return Promise.resolve(users[id]);
+
+ const getUserWithId = function(id) {
+ return pool.query(`
+SELECT users.* FROM users
+WHERE users.id = $1
+`, [id])
+.then(res => (res.rows[0]));
 }
+ 
+
 exports.getUserWithId = getUserWithId;
 
 
@@ -49,10 +72,18 @@ exports.getUserWithId = getUserWithId;
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser =  function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+  // const userId = Object.keys(users).length + 1;
+  // user.id = userId;
+  // users[userId] = user;
+  // return Promise.resolve(user);
+  return pool.query(`
+  INSERT INTO users (
+    name, email, password
+  )
+  VALUES ($1, $2, $3)
+  RETURNING users.id;`, [user.name, user.email, user.password]
+)
+.then(res => (res.rows[0]))
 }
 exports.addUser = addUser;
 
@@ -107,5 +138,12 @@ const addProperty = function(property) {
   property.id = propertyId;
   properties[propertyId] = property;
   return Promise.resolve(property);
-}
+//   pool.query(`INSERT INTO properties (owner_id, title, description, thumbnail_photo_url,
+//     cover_photo_url, cost_per_night, parking_spaces,
+//     number_of_bathrooms, number_of_bedrooms, country, street, 
+//     city, province, post_code, active)
+//     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+//     `, [user.id, user.title, user.description, user.thumbnail_photo_url, user.cover_photo_url, user.cost_per_night, user.parking_spaces, user.number_of_bathrooms, user.number_of_bedrooms, user.country, user.street, user.city, user.province, user.post_code, true ])
+// }.then(res => (res.rows[0]))
+};
 exports.addProperty = addProperty;
